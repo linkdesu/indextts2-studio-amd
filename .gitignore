@@ -99,3 +99,7 @@ desktop.ini
 
 # 本地打包资源：随便携包分发的 ffmpeg 二进制（约 84MB，不进 git）
 /tools/ffmpeg/
+
+# 本地维护文档：amd-7900 分支的排障与决策记录，只在本机存在，不入库
+/HANDOFF.md
+/HANDOFF-*.md
