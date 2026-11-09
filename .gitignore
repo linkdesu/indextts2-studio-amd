@@ -38,6 +38,13 @@ desktop.ini
 /logs/
 # 服务端运行时状态（如 ui_state.json 里的参数锁定），每次运行都会变，不入库
 /data/
+
+# 以上四个目录在本机被软链到 ~/audio_assets/<name>（便于集中管理数据）。
+# 软链在 git 眼里是文件不是目录，带斜杠的规则匹配不到，所以再补一组不带斜杠的。
+/outputs
+/prompts
+/logs
+/data
 # 模型加速配置（fp16 开关、diffusion_steps、gpt_batch_size 等）由「保存配置」写盘，
 # 内容取决于本机显卡；入库会把某台机器的参数带给所有人（显存小的机器可能直接 OOM）。
 # 缺这个文件时 _model_cfg_load() 走 FileNotFoundError 分支，用命令行默认值。
