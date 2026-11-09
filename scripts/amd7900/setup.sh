@@ -82,6 +82,8 @@ else
 fi
 
 # ---- 4. 其余依赖 ----
+# h5py 随 requirements.txt 一起装：读 vendor/lfwb 的 .sofa HRIR（可选依赖，
+# 装失败不影响启动，hrir.py 会降级回球头近似）
 log "安装 requirements.txt"
 run_pip -r "$ROOT/requirements.txt"
 
