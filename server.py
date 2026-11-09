@@ -10,6 +10,7 @@ import contextlib
 import errno
 import gc
 import hashlib
+import importlib
 import io
 import json
 import math
@@ -4134,6 +4135,45 @@ def _register_legacy_redirects():
 
 
 _register_legacy_redirects()
+
+
+# ---- 可选扩展挂载 -------------------------------------------------------------
+def _register_optional_extensions(app, api):
+    """挂载可选的下游扩展模块 lf_integration：存在即加载，缺失即静默跳过。
+
+    扩展是可选能力，它的任何失败都不得影响主程序启动：模块缺失只记 debug，
+    导入 / register 抛异常只记 error（带堆栈）后返回，一律不向上抛。
+    deps 的键就是扩展契约（票 #3 的适配层按此实现）：改名或删键即破坏契约。
+    """
+    deps = {
+        "tts": tts,
+        "infer_lock": _INFER_LOCK,
+        "logger": logger,
+        "project_dir": current_dir,
+        "web_dir": _WEB_DIR,
+        "verbose": cmd_args.verbose,
+    }
+    try:
+        mod = importlib.import_module("lf_integration")
+    except ModuleNotFoundError as e:
+        if e.name == "lf_integration":
+            # 上游主线仓库本就没有这个文件，属正常状态，不值得惊动用户
+            logger.debug("Optional extension lf_integration not installed; skipping")
+            return
+        # 扩展自身 import 的第三方依赖缺失：是扩展的问题，记 error 不能吞掉
+        logger.error("Optional extension lf_integration import failed: %s", e, exc_info=True)
+        return
+    except Exception as e:
+        logger.error("Optional extension lf_integration import failed: %s", e, exc_info=True)
+        return
+    try:
+        mod.register(app, api, deps)
+    except Exception as e:
+        logger.error("Optional extension lf_integration.register failed: %s", e, exc_info=True)
+
+
+# 放在全部内置路由之后：扩展若与现有路径重名，注册时即暴露，不会悄悄顶掉核心接口。
+_register_optional_extensions(app, api)
 
 
 if __name__ == "__main__":
