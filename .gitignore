@@ -110,3 +110,7 @@ desktop.ini
 # 本地维护文档：amd-7900 分支的排障与决策记录，只在本机存在，不入库
 /HANDOFF.md
 /HANDOFF-*.md
+
+# 长篇工作台（vendor/lfwb）的运行数据目录：台本、渲染产物、回收站等，
+# 全部是用户本机数据，不入库。
+/longform/
