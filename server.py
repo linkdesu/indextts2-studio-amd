@@ -1351,9 +1351,20 @@ def index():
             html = f.read()
     except OSError as e:
         raise HTTPException(500, f"Failed to read index.html: {e}")
+    # 票 #2 扩展缝：下游分支的导航脚本注入。必须在 ?v={...} 指纹替换之前把
+    # <script> 插进 </body> 前，否则占位符 {lf-nav.js} 轮不到 _fingerprint
+    # 展开，浏览器会去请求字面量 URL。只替换第一个 </body>（正常 HTML 只有一个）。
+    # web/lf-nav.js 不存在（上游主线仓库）时一个字节都不加，页面逐字节不变。
+    if os.path.isfile(os.path.join(_WEB_DIR, "lf-nav.js")):
+        html = html.replace(
+            "</body>",
+            '<script src="/assets/lf-nav.js?v={lf-nav.js}" defer></script>\n</body>',
+            1,
+        )
     # 把 ?v=xxx 占位符替换为内容指纹；favicon 之类没指纹的保持原样。
     # 每次请求现算（带 mtime 缓存），改完前端刷新即可生效，不必重启服务。
-    html = re.sub(r'\?v=\{([a-z0-9_.]+)\}', lambda m: f"?v={_fingerprint(m.group(1))}", html)
+    # 字符类含 `-`：注入的 lf-nav.js 文件名带连字符，漏了它占位符原样留在页面里。
+    html = re.sub(r'\?v=\{([a-z0-9_.-]+)\}', lambda m: f"?v={_fingerprint(m.group(1))}", html)
     return Response(content=html, media_type="text/html", headers={"Cache-Control": "no-cache"})
 
 
