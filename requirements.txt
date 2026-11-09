@@ -1,0 +1,51 @@
+# AMD RDNA3 (gfx1100) 运行时依赖：Python 3.14 + torch 2.14.1+rocm7.2
+#
+# 与 pyproject.toml 的差异（都是为了拿到 cp314 wheel / ROCm 7.2 用户态）：
+#   * numpy 放宽到 2.3.x：cp314 wheel 从 2.3.2 才有；numba 0.63 要求 <2.4
+#   * pandas / matplotlib 放宽：原 pin 没有 cp314 wheel，会退化成源码编译
+#   * 去掉 keras / tensorboard / opencv-python：代码里没有任何 import
+#   * 去掉 descript-audiotools 之外不需要的；注意 modelscope 与 descript-audiotools
+#     是顶层 import，不能省（infer_v2.py / s2mel/dac/__init__.py）
+#   * torch / torchaudio / triton-rocm 不写在这里，由 scripts/amd7900/setup.sh 单独装
+#     （只从 ROCm 索引取，避免 PyPI 上的 CUDA 版覆盖）
+
+numpy>=2.3.2,<2.4
+numba==0.63.0
+pandas>=3.1.1
+matplotlib>=3.11
+scipy
+librosa==0.10.2.post1
+soundfile
+soxr
+audiotsm==0.1.2
+accelerate==1.8.1
+cn2an==0.5.22
+cython==3.0.7
+descript-audiotools==0.7.2
+einops>=0.8.1
+ffmpeg-python==0.2.0
+g2p-en==2.1.0
+jieba==0.42.1
+json5==0.10.0
+modelscope==1.27.0
+munch==4.0.0
+omegaconf>=2.3.0
+safetensors==0.5.2
+sentencepiece
+textstat
+tokenizers==0.21.0
+transformers==4.52.1
+requests
+tqdm
+WeTextProcessing
+
+# server extra
+fastapi
+uvicorn
+psutil
+python-multipart
+markdown
+sherpa-onnx==1.13.8
+
+# test
+pytest
